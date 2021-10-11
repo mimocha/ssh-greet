@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Custom welcome message, designed to work around ssh $USER being root
+# Prints the logged-in user's fullname in the message of the day.
+# Place file in /etc/update-motd.d
+# Tested on Ubuntu, should work on all Debian systems
+
+# based on https://superuser.com/a/1178598/1220909
+# and on https://stackoverflow.com/a/833256/5675094
+
+# Search the process tree, search for the ssh process, and get where the username is
+ps_out=`ps -x | grep ssh | awk '{print $6}'`
+# Extract username from ps output with string manipulation
+user_name=`echo $ps_out | awk '{print $2}'`
+# Search for the user record GECOS field from passwd
+user_record=`getent passwd $user_name`
+# Extract user's full name from GECOS & remove commas
+full_name=`echo "$user_record" | cut -d ':' -f 5 | sed 's/,,,//'`
+# Output
+echo "Welcome to the server, $full_name"
